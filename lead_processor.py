@@ -4,7 +4,7 @@ def filter_not_replied_leads(leads: List[Dict]) -> List[Dict]:
     """Filter leads where reply_count == 0 and not bounced."""
     filtered = []
     for lead in leads:
-        reply_count = lead.get("reply_count", 0)
+        reply_count = int(lead.get("reply_count", 0) or 0)
         email_status = lead.get("email_status", "").lower()
 
         # reply_count must be 0 (or missing/empty which we treat as 0)
