@@ -48,3 +48,9 @@ def test_get_campaign_leads(mock_get, client):
 
     assert len(leads) == 2
     assert leads[0]["email"] == "test@example.com"
+
+@patch('requests.delete')
+def test_delete_campaign_lead(mock_delete, client):
+    mock_delete.return_value.status_code = 200
+    result = client.delete_campaign_lead(123, 456)
+    assert result is True

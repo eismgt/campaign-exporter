@@ -12,13 +12,13 @@ class SmartleadClient:
     def base_url(self):
         return self.BASE_URL
 
-    def _get(self, endpoint: str, params: dict = None) -> dict:
+    def _get(self, endpoint: str, params: dict | None = None) -> dict:
         """Make GET request to Smartlead API."""
         url = f"{self.BASE_URL}{endpoint}"
         params = params or {}
         params["api_key"] = self.api_key
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         response.raise_for_status()
         return response.json()
 
@@ -45,5 +45,6 @@ class SmartleadClient:
         """Delete a lead from a campaign. Reserved for V2."""
         url = f"{self.BASE_URL}/campaigns/{campaign_id}/leads/{lead_id}"
         params = {"api_key": self.api_key}
-        response = requests.delete(url, params=params)
+        response = requests.delete(url, params=params, timeout=30)
+        response.raise_for_status()
         return response.status_code == 200
