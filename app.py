@@ -4,12 +4,86 @@ from smartlead_client import SmartleadClient
 from lead_processor import process_campaign_leads
 from csv_exporter import leads_to_csv, generate_filename
 
+# Hardcoded credentials
+USERNAME = "admin"
+PASSWORD = "team@hyperke"
+
 st.set_page_config(
     page_title="Smartlead Campaign Exporter",
     page_icon="📧",
     layout="wide"
 )
 
+# Initialize session state for authentication
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+# Logout functionality
+if st.session_state.authenticated:
+    col1, col2 = st.columns([5, 1])
+    with col2:
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.authenticated = False
+            st.rerun()
+
+# Login Page
+if not st.session_state.authenticated:
+    st.markdown("""
+        <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .login-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .login-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+        <div class="login-container">
+            <div class="login-title">📧 Campaign Exporter</div>
+            <div class="login-subtitle">Please log in to continue</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        username = st.text_input(
+            "Username",
+            placeholder="Enter your username",
+            key="login_username"
+        )
+
+        password = st.text_input(
+            "Password",
+            type="password",
+            placeholder="Enter your password",
+            key="login_password"
+        )
+
+        if st.button("🔐 Login", type="primary", use_container_width=True):
+            if username == USERNAME and password == PASSWORD:
+                st.session_state.authenticated = True
+                st.success("✅ Login successful!")
+                st.rerun()
+            else:
+                st.error("❌ Invalid username or password")
+
+    st.stop()
+
+# Main App (shown only when authenticated)
 st.title("📧 Smartlead Campaign Exporter")
 st.markdown("Export leads who haven't replied from selected campaigns.")
 
