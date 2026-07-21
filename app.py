@@ -31,8 +31,17 @@ if not api_key or api_key == "your_api_key_here":
 
 st.success("✅ API key configured")
 
+# Initialize session state
+if "selected_client_id" not in st.session_state:
+    st.session_state.selected_client_id = None
+
 # Initialize client
-client = SmartleadClient(api_key)
+try:
+    client = SmartleadClient(api_key)
+    st.success("✅ Connected to Smartlead API")
+except Exception as e:
+    st.error(f"Failed to initialize API client: {e}")
+    st.stop()
 
 # Client Selection
 st.header("1. Select Client")
@@ -150,3 +159,7 @@ if selected_campaigns:
 
 else:
     st.info("👆 Select at least one campaign above to export leads.")
+
+# Footer
+st.divider()
+st.caption("Built for TCPR team | V1 - MVP Release")
