@@ -30,35 +30,72 @@ if st.session_state.authenticated:
 if not st.session_state.authenticated:
     st.markdown("""
         <style>
+        /* Center login form vertically and horizontally */
+        .main > div {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
+        /* Login container styling */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
         .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 380px;
+            padding: 48px 40px 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
             text-align: center;
         }
+
         .login-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1f2937;
         }
+
         .login-subtitle {
-            color: #666;
-            margin-bottom: 30px;
+            color: #6b7280;
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+
+        /* Form input styling */
+        .stTextInput > div > div > input {
+            text-align: left;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .login-container {
+                max-width: 100%;
+                padding: 32px 24px;
+                border-radius: 8px;
+            }
         }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-        <div class="login-container">
-            <div class="login-title">📧 Campaign Exporter</div>
-            <div class="login-subtitle">Please log in to continue</div>
-        </div>
-    """, unsafe_allow_html=True)
+    # Centered login form
+    _, center_col, _ = st.columns([1, 2, 1])
 
-    with st.container():
-        st.markdown("<br>", unsafe_allow_html=True)
+    with center_col:
+        st.markdown("""
+            <div class="login-wrapper">
+                <div class="login-container">
+                    <div class="login-title">📧 Campaign Exporter</div>
+                    <div class="login-subtitle">Please log in to continue</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
         username = st.text_input(
             "Username",
@@ -72,6 +109,8 @@ if not st.session_state.authenticated:
             placeholder="Enter your password",
             key="login_password"
         )
+
+        st.markdown("<br>", unsafe_allow_html=True)
 
         if st.button("🔐 Login", type="primary", use_container_width=True):
             if username == USERNAME and password == PASSWORD:
