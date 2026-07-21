@@ -28,90 +28,110 @@ if st.session_state.authenticated:
 
 # Login Page
 if not st.session_state.authenticated:
+    # Hide all Streamlit chrome
     st.markdown("""
         <style>
-        /* Remove Streamlit's default padding */
+        /* Full viewport reset */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Remove all Streamlit padding/margins */
         .main .block-container {
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            padding-left: 20px !important;
-            padding-right: 20px !important;
+            padding: 0 !important;
             max-width: 100% !important;
         }
 
+        /* Hide Streamlit UI elements */
+        #MainMenu, footer, header, .stAppToolbar {
+            display: none !important;
+        }
+
         /* Full viewport height centering */
-        .login-full-page {
+        .stApp {
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .login-wrapper {
+            height: 100vh;
+            height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            width: 100%;
+            padding: 16px;
         }
 
-        /* Login container styling */
-        .login-container {
+        /* Login card - matching reference */
+        .login-card {
             width: 100%;
-            max-width: 380px;
-            padding: 36px 36px 32px;
+            max-width: 360px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            padding: 32px 28px 28px;
             text-align: center;
         }
 
         .login-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #1f2937;
+            font-size: 26px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            color: #111827;
         }
 
         .login-subtitle {
-            color: #6b7280;
             font-size: 14px;
-            margin-bottom: 24px;
+            color: #6b7280;
+            margin: 0 0 20px 0;
         }
 
-        /* Hide Streamlit's default elements on login page */
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
+        /* Form spacing */
+        .login-form > div {
+            margin-bottom: 12px;
+        }
 
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .login-container {
-                max-width: 100%;
-                padding: 28px 24px 24px;
-                border-radius: 8px;
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-wrapper {
+                padding: 12px;
             }
-            .main .block-container {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
+            .login-card {
+                max-width: 100%;
+                padding: 24px 20px 20px;
             }
         }
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-        <div class="login-full-page">
-            <div class="login-container">
-                <div class="login-title">📧 Campaign Exporter</div>
-                <div class="login-subtitle">Please log in to continue</div>
-            </div>
+    # Login form with custom container
+    login_html = """
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-title">📧 Campaign Exporter</div>
+            <div class="login-subtitle">Please log in to continue</div>
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+    """
+    st.markdown(login_html, unsafe_allow_html=True)
 
+    # Form inputs - using minimal spacing
     username = st.text_input(
         "Username",
         placeholder="Enter your username",
-        key="login_username"
+        key="login_username",
+        label_visibility="collapsed"
     )
 
     password = st.text_input(
         "Password",
         type="password",
         placeholder="Enter your password",
-        key="login_password"
+        key="login_password",
+        label_visibility="collapsed"
     )
 
     if st.button("🔐 Login", type="primary", use_container_width=True):
