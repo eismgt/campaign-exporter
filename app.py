@@ -31,10 +31,6 @@ if not api_key or api_key == "your_api_key_here":
 
 st.success("✅ API key configured")
 
-# Initialize session state
-if "selected_client_id" not in st.session_state:
-    st.session_state.selected_client_id = None
-
 # Initialize client
 try:
     client = SmartleadClient(api_key)
@@ -43,69 +39,43 @@ except Exception as e:
     st.error(f"Failed to initialize API client: {e}")
     st.stop()
 
-# Client Selection
-st.header("1. Select Client")
+# Campaign Selection
+st.header("1. Select Campaigns")
 
 try:
-    all_clients = client.get_all_clients()
+    campaigns = client.get_campaigns()
 
-    if not all_clients:
-        st.error("No clients found. Please create a client in Smartlead first.")
+    if not campaigns:
+        st.warning("No campaigns found.")
         st.stop()
-    elif len(all_clients) == 1:
-        st.info("Only one client available - automatically selected")
-        selected_client_id = all_clients[0]["id"]
-    else:
-        client_options = {c.get("name", f"Client {c['id']}"): c["id"] for c in all_clients}
-        selected_client_name = st.selectbox(
-            "Choose a client",
-            options=list(client_options.keys()),
-            index=0
-        )
-        selected_client_id = client_options[selected_client_name]
+
+    # Create display names with status
+    campaign_options = {}
+    for c in campaigns:
+        name = c.get("name", f"Campaign {c['id']}")
+        status = c.get("status", "UNKNOWN")
+        display_name = f"{name} (#{c['id']}) - {status}"
+        campaign_options[display_name] = c
+
+    selected_campaign_names = st.multiselect(
+        "Search and select campaigns to export",
+        options=list(campaign_options.keys()),
+        default=[],
+        placeholder="Type to search campaigns...",
+        label_visibility="visible"
+    )
+
+    selected_campaigns = [campaign_options[name] for name in selected_campaign_names]
+
+    if selected_campaigns:
+        st.info(f"✅ {len(selected_campaigns)} campaign(s) selected")
 
 except Exception as e:
-    st.error(f"Failed to fetch clients: {e}")
+    st.error(f"Failed to fetch campaigns: {e}")
     st.stop()
 
-# Campaign Selection
-st.header("2. Select Campaigns")
-
-if selected_client_id:
-    try:
-        campaigns = client.get_campaigns(client_id=selected_client_id)
-
-        if not campaigns:
-            st.warning("No campaigns found for this client.")
-            st.stop()
-
-        # Create display names with status
-        campaign_options = {}
-        for c in campaigns:
-            name = c.get("name", f"Campaign {c['id']}")
-            status = c.get("status", "UNKNOWN")
-            display_name = f"{name} (#{c['id']}) - {status}"
-            campaign_options[display_name] = c
-
-        selected_campaign_names = st.multiselect(
-            "Search and select campaigns to export",
-            options=list(campaign_options.keys()),
-            default=[],
-            placeholder="Type to search campaigns...",
-            label_visibility="visible"
-        )
-
-        selected_campaigns = [campaign_options[name] for name in selected_campaign_names]
-
-        if selected_campaigns:
-            st.info(f"✅ {len(selected_campaigns)} campaign(s) selected")
-
-    except Exception as e:
-        st.error(f"Failed to fetch campaigns: {e}")
-        st.stop()
-
 # Export Section
-st.header("3. Export Leads")
+st.header("2. Export Leads")
 
 if selected_campaigns:
     if st.button("📥 Export Leads (CSV)", type="primary", disabled=not selected_campaigns):
