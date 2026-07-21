@@ -49,6 +49,9 @@ try:
         st.warning("No campaigns found.")
         st.stop()
 
+    # Create a mapping of campaign ID to campaign object
+    campaign_by_id = {c["id"]: c for c in campaigns}
+
     # Create display names with status
     campaign_options = {}
     for c in campaigns:
@@ -57,18 +60,71 @@ try:
         display_name = f"{name} (#{c['id']}) - {status}"
         campaign_options[display_name] = c
 
-    selected_campaign_names = st.multiselect(
-        "Search and select campaigns to export",
-        options=list(campaign_options.keys()),
-        default=[],
-        placeholder="Type to search campaigns...",
-        label_visibility="visible"
-    )
+    # Tab interface for both selection methods
+    tab1, tab2 = st.tabs(["🔍 Search & Select", "🆔 Enter Campaign IDs"])
 
-    selected_campaigns = [campaign_options[name] for name in selected_campaign_names]
+    with tab1:
+        selected_campaign_names = st.multiselect(
+            "Search and select campaigns to export",
+            options=list(campaign_options.keys()),
+            default=[],
+            placeholder="Type to search campaigns...",
+            label_visibility="visible",
+            key="multiselect_tab"
+        )
+        selected_campaigns = [campaign_options[name] for name in selected_campaign_names]
 
+    with tab2:
+        id_input = st.text_input(
+            "Enter Campaign IDs (comma-separated)",
+            placeholder="e.g., 12345, 67890, 54321",
+            help="Enter multiple campaign IDs separated by commas",
+            key="id_input_tab"
+        )
+
+        selected_by_id = []
+        invalid_ids = []
+        not_found_ids = []
+
+        if id_input.strip():
+            # Parse and validate Campaign IDs
+            input_ids = [id_str.strip() for id_str in id_input.split(",") if id_str.strip()]
+
+            for id_str in input_ids:
+                # Try to convert to integer
+                try:
+                    campaign_id = int(id_str)
+                except ValueError:
+                    invalid_ids.append(id_str)
+                    continue
+
+                # Check if campaign exists
+                if campaign_id in campaign_by_id:
+                    selected_by_id.append(campaign_by_id[campaign_id])
+                else:
+                    not_found_ids.append(str(campaign_id))
+
+            # Display validation messages
+            if invalid_ids:
+                st.error(f"❌ Invalid Campaign ID format: {', '.join(invalid_ids)}")
+
+            if not_found_ids:
+                st.warning(f"⚠️ Campaign IDs not found: {', '.join(not_found_ids)}")
+
+            if selected_by_id:
+                st.success(f"✅ {len(selected_by_id)} campaign(s) matched by ID")
+
+            # Combine with multiselect selections if any
+            selected_campaigns = selected_by_id
+
+    # Combine selections from both tabs
     if selected_campaigns:
-        st.info(f"✅ {len(selected_campaigns)} campaign(s) selected")
+        # Get unique campaigns by ID to avoid duplicates
+        unique_campaigns = {c["id"]: c for c in selected_campaigns}.values()
+        selected_campaigns = list(unique_campaigns)
+
+        if len(selected_campaigns) > 0:
+            st.info(f"✅ {len(selected_campaigns)} campaign(s) selected")
 
 except Exception as e:
     st.error(f"Failed to fetch campaigns: {e}")
@@ -149,7 +205,3 @@ if selected_campaigns:
 
 else:
     st.info("👆 Select at least one campaign above to export leads.")
-
-# Footer
-st.divider()
-st.caption("Built for TCPR team | V1 - MVP Release")
