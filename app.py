@@ -28,7 +28,6 @@ if not api_key or api_key == "your_api_key_here":
     st.stop()
 
 st.success("✅ API key configured")
-st.caption(f"Using API key: {api_key[:8]}...")
 
 # Initialize client
 client = SmartleadClient(api_key)
@@ -39,17 +38,20 @@ st.header("1. Select Client")
 try:
     all_clients = client.get_all_clients()
 
-    if len(all_clients) > 1:
-        client_options = {c["name"]: c["id"] for c in all_clients}
+    if not all_clients:
+        st.error("No clients found. Please create a client in Smartlead first.")
+        st.stop()
+    elif len(all_clients) == 1:
+        st.info("Only one client available - automatically selected")
+        selected_client_id = all_clients[0]["id"]
+    else:
+        client_options = {c.get("name", f"Client {c['id']}"): c["id"] for c in all_clients}
         selected_client_name = st.selectbox(
             "Choose a client",
             options=list(client_options.keys()),
             index=0
         )
         selected_client_id = client_options[selected_client_name]
-    else:
-        st.info("Only one client available - automatically selected")
-        selected_client_id = all_clients[0]["id"] if all_clients else None
 
 except Exception as e:
     st.error(f"Failed to fetch clients: {e}")
