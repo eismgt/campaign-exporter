@@ -28,119 +28,58 @@ if st.session_state.authenticated:
 
 # Login Page
 if not st.session_state.authenticated:
-    # Hide all Streamlit chrome
     st.markdown("""
         <style>
-        /* Full viewport reset */
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* Remove all Streamlit padding/margins */
-        .main .block-container {
-            padding: 0 !important;
-            max-width: 100% !important;
-        }
-
-        /* Hide Streamlit UI elements */
-        #MainMenu, footer, header, .stAppToolbar {
-            display: none !important;
-        }
-
-        /* Full viewport height centering */
-        .stApp {
-            height: 100vh;
-            height: 100dvh;
-        }
-
-        .login-wrapper {
-            height: 100vh;
-            height: 100dvh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-        }
-
-        /* Login card - matching reference */
-        .login-card {
-            width: 100%;
-            max-width: 360px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-            padding: 32px 28px 28px;
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
         .login-title {
-            font-size: 26px;
-            font-weight: 600;
-            margin: 0 0 4px 0;
-            color: #111827;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
-
         .login-subtitle {
-            font-size: 14px;
-            color: #6b7280;
-            margin: 0 0 20px 0;
-        }
-
-        /* Form spacing */
-        .login-form > div {
-            margin-bottom: 12px;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .login-wrapper {
-                padding: 12px;
-            }
-            .login-card {
-                max-width: 100%;
-                padding: 24px 20px 20px;
-            }
+            color: #666;
+            margin-bottom: 30px;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Login form with custom container
-    login_html = """
-    <div class="login-wrapper">
-        <div class="login-card">
+    st.markdown("""
+        <div class="login-container">
             <div class="login-title">📧 Campaign Exporter</div>
             <div class="login-subtitle">Please log in to continue</div>
         </div>
-    </div>
-    """
-    st.markdown(login_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-    # Form inputs - using minimal spacing
-    username = st.text_input(
-        "Username",
-        placeholder="Enter your username",
-        key="login_username",
-        label_visibility="collapsed"
-    )
+    with st.container():
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    password = st.text_input(
-        "Password",
-        type="password",
-        placeholder="Enter your password",
-        key="login_password",
-        label_visibility="collapsed"
-    )
+        username = st.text_input(
+            "Username",
+            placeholder="Enter your username",
+            key="login_username"
+        )
 
-    if st.button("🔐 Login", type="primary", use_container_width=True):
-        if username == USERNAME and password == PASSWORD:
-            st.session_state.authenticated = True
-            st.success("✅ Login successful!")
-            st.rerun()
-        else:
-            st.error("❌ Invalid username or password")
+        password = st.text_input(
+            "Password",
+            type="password",
+            placeholder="Enter your password",
+            key="login_password"
+        )
+
+        if st.button("🔐 Login", type="primary", use_container_width=True):
+            if username == USERNAME and password == PASSWORD:
+                st.session_state.authenticated = True
+                st.success("✅ Login successful!")
+                st.rerun()
+            else:
+                st.error("❌ Invalid username or password")
 
     st.stop()
 
