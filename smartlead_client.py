@@ -34,12 +34,44 @@ class SmartleadClient:
         return self._get("/campaigns", params)
 
     def get_campaign_leads(self, campaign_id: int) -> list:
-        """Get all leads for a campaign."""
-        result = self._get(f"/campaigns/{campaign_id}/leads")
-        # Handle different response formats
-        if isinstance(result, dict):
-            return result.get("leads", [])
-        return result if isinstance(result, list) else []
+        """Get all leads for a campaign (handles pagination)."""
+        all_leads = []
+        offset = 0
+        limit = 100  # API max limit per request
+
+        while True:
+            params = {"offset": offset, "limit": limit}
+            result = self._get(f"/campaigns/{campaign_id}/leads", params)
+
+            # Handle different response formats
+            if isinstance(result, dict):
+                # API returns {"total_leads": "N", "data": [...]}
+                leads_data = result.get("data", [])
+                total_leads = int(result.get("total_leads", 0))
+
+                # Flatten nested lead structure
+                for item in leads_data:
+                    if isinstance(item, dict) and "lead" in item:
+                        # Merge campaign-level fields with lead data
+                        lead = item["lead"].copy()
+                        # Add campaign-specific fields
+                        lead["campaign_lead_map_id"] = item.get("campaign_lead_map_id")
+                        lead["lead_status"] = item.get("status")
+                        lead["created_at"] = item.get("created_at")
+                        all_leads.append(lead)
+                    else:
+                        all_leads.append(item)
+
+                # Check if we've fetched all leads
+                if len(all_leads) >= total_leads or not leads_data:
+                    break
+
+                offset += limit
+            else:
+                # Fallback for unexpected format
+                return result if isinstance(result, list) else []
+
+        return all_leads
 
     def delete_campaign_lead(self, campaign_id: int, lead_id: int) -> bool:
         """Delete a lead from a campaign. Reserved for V2."""

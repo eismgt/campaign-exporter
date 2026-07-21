@@ -1,8 +1,18 @@
 from typing import List, Dict
 
 def filter_not_replied_leads(leads: List[Dict]) -> List[Dict]:
-    """Filter leads where reply_count == 0 and not bounced."""
+    """Filter leads where reply_count == 0 and not bounced.
+
+    NOTE: If reply_count/email_status fields are not available (API limitation),
+    this returns all leads. Filtering is best-effort based on available data.
+    """
     filtered = []
+    has_engagement_data = any("reply_count" in l or "email_status" in l for l in leads)
+
+    if not has_engagement_data:
+        # API doesn't provide engagement data - return all leads
+        return leads
+
     for lead in leads:
         reply_count = int(lead.get("reply_count", 0) or 0)
         email_status = lead.get("email_status", "").lower()
@@ -56,8 +66,15 @@ def process_campaign_leads(all_leads: List[Dict]) -> Dict:
 
     # Calculate stats
     original_count = len(all_leads)
-    bounced_count = sum(1 for l in all_leads if l.get("email_status", "").lower() in ["is_bounced", "bounced"])
-    replied_count = sum(1 for l in all_leads if l.get("reply_count", 0) > 0)
+    has_engagement_data = any("reply_count" in l or "email_status" in l for l in all_leads)
+
+    if has_engagement_data:
+        bounced_count = sum(1 for l in all_leads if l.get("email_status", "").lower() in ["is_bounced", "bounced"])
+        replied_count = sum(1 for l in all_leads if l.get("reply_count", 0) > 0)
+    else:
+        bounced_count = 0
+        replied_count = 0
+
     final_count = len(final_leads)
     duplicates_removed = len(not_replied) - final_count
 
@@ -69,5 +86,6 @@ def process_campaign_leads(all_leads: List[Dict]) -> Dict:
             "replied_excluded": replied_count,
             "duplicates_removed": duplicates_removed,
             "final": final_count,
+            "has_engagement_data": has_engagement_data,
         }
     }

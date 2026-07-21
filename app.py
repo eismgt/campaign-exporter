@@ -111,7 +111,10 @@ if selected_campaigns:
             col2.metric("After Filtering", stats["original"] - stats["bounced_excluded"] - stats["replied_excluded"])
             col3.metric("Final Unique", stats["final"])
 
-            st.caption(f"Bounced excluded: {stats['bounced_excluded']} | Replied excluded: {stats['replied_excluded']} | Duplicates removed: {stats['duplicates_removed']}")
+            if stats.get("has_engagement_data", False):
+                st.caption(f"Bounced excluded: {stats['bounced_excluded']} | Replied excluded: {stats['replied_excluded']} | Duplicates removed: {stats['duplicates_removed']}")
+            else:
+                st.caption(f"⚠️ API doesn't provide engagement metrics - exported all leads (deduped). Duplicates removed: {stats['duplicates_removed']}")
 
             # Generate CSV
             csv_data = leads_to_csv(final_leads)
