@@ -114,6 +114,13 @@ try:
             if selected_by_id:
                 st.success(f"✅ {len(selected_by_id)} campaign(s) matched by ID")
 
+                # Display matched campaigns for verification
+                st.subheader("📋 Matched Campaigns")
+                for campaign in selected_by_id:
+                    name = campaign.get("name", f"Campaign #{campaign['id']}")
+                    status = campaign.get("status", "UNKNOWN")
+                    st.markdown(f"- **{name}** (ID: `{campaign['id']}`) — *{status}*")
+
             # Combine with multiselect selections if any
             selected_campaigns = selected_by_id
 
