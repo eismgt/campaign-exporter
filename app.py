@@ -1,6 +1,8 @@
 import streamlit as st
 import os
 from smartlead_client import SmartleadClient
+from lead_processor import process_campaign_leads
+from csv_exporter import leads_to_csv, generate_filename
 
 st.set_page_config(
     page_title="Smartlead Campaign Exporter",
@@ -92,3 +94,59 @@ if selected_client_id:
     except Exception as e:
         st.error(f"Failed to fetch campaigns: {e}")
         st.stop()
+
+# Export Section
+st.header("3. Export Leads")
+
+if selected_campaigns:
+    if st.button("📥 Export Leads (CSV)", type="primary", disabled=not selected_campaigns):
+
+        with st.spinner("Fetching leads..."):
+            all_leads = []
+            campaign_results = []
+
+            for campaign in selected_campaigns:
+                try:
+                    leads = client.get_campaign_leads(campaign["id"])
+                    all_leads.extend(leads)
+                    campaign_results.append({
+                        "name": campaign.get("name", f"#{campaign['id']}"),
+                        "count": len(leads)
+                    })
+                    st.caption(f"✓ {campaign.get('name')}: {len(leads)} leads")
+                except Exception as e:
+                    st.error(f"Failed to fetch leads for {campaign.get('name')}: {e}")
+
+            if not all_leads:
+                st.warning("No leads found in selected campaigns.")
+                st.stop()
+
+            # Process leads
+            result = process_campaign_leads(all_leads)
+            final_leads = result["leads"]
+            stats = result["stats"]
+
+            # Display stats
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Original Leads", stats["original"])
+            col2.metric("After Filtering", stats["original"] - stats["bounced_excluded"] - stats["replied_excluded"])
+            col3.metric("Final Unique", stats["final"])
+
+            st.caption(f"Bounced excluded: {stats['bounced_excluded']} | Replied excluded: {stats['replied_excluded']} | Duplicates removed: {stats['duplicates_removed']}")
+
+            # Generate CSV
+            csv_data = leads_to_csv(final_leads)
+            campaign_names = [c.get("name", f"campaign_{c['id']}") for c in selected_campaigns]
+            filename = generate_filename(campaign_names)
+
+            # Download button
+            st.download_button(
+                label="📥 Download CSV",
+                data=csv_data,
+                file_name=filename,
+                mime="text/csv",
+                type="primary"
+            )
+
+else:
+    st.info("👆 Select at least one campaign above to export leads.")
