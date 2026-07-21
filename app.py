@@ -116,6 +116,23 @@ if selected_campaigns:
             else:
                 st.caption(f"⚠️ API doesn't provide engagement metrics - exported all leads (deduped). Duplicates removed: {stats['duplicates_removed']}")
 
+            # Display leads in a table
+            st.subheader(f"📊 Preview ({stats['final']} leads)")
+
+            # Prepare data for display - select key columns
+            display_columns = ["email", "first_name", "last_name", "company_name", "website", "location"]
+            display_leads = []
+            for lead in final_leads:
+                row = {col: lead.get(col, "") for col in display_columns}
+                display_leads.append(row)
+
+            st.dataframe(
+                display_leads,
+                use_container_width=True,
+                hide_index=True,
+                height=400
+            )
+
             # Generate CSV
             csv_data = leads_to_csv(final_leads)
             campaign_names = [c.get("name", f"campaign_{c['id']}") for c in selected_campaigns]
